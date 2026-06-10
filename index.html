@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>依恋类型测试 · Attachment Style Assessment</title>
+<link rel="preload" href="https://fonts.loli.net/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.loli.net/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<style>
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --font-serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+    --font-mono: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    --green: #22a06b;
+    --purple: #6554A0;
+    --red: #D4605A;
+    --blue: #4A76C4;
+    --teal: #2D8F65;
+    --violet: #7B5EA7;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-sans);
+    background: #fafafa;
+    color: #1a1a2e;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #app {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  button { font-family: inherit; -webkit-appearance: none; }
+  button:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ─── Intro ─── */
+  .intro { animation: fadeIn 0.6s ease-out; text-align: center; padding-top: 6vh; }
+  .intro-carousel {
+    position: relative;
+    width: clamp(160px, 40vw, 220px);
+    height: clamp(220px, 55vw, 300px);
+    margin: 0 auto 24px;
+    overflow: hidden;
+    border-radius: 20px;
+  }
+  .intro-carousel img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    visibility: hidden;
+    transform: translateX(100%);
+  }
+  .intro-carousel img.active {
+    visibility: visible;
+    transform: translateX(0);
+    transition: transform 0.5s ease-in-out;
+  }
+  .intro-carousel img.exit {
+    visibility: visible;
+    transform: translateX(-100%);
+    transition: transform 0.5s ease-in-out;
+  }
+  .intro-carousel::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(250,250,250,0.15) 0%,
+      rgba(250,250,250,0.05) 40%,
+      rgba(250,250,250,0.25) 80%,
+      rgba(250,250,250,0.7) 100%
+    );
+    pointer-events: none;
+  }
+  .intro-carousel-hint {
+    font-size: 12px; color: #ccc; margin-top: -16px; margin-bottom: 20px;
+    letter-spacing: 0.05em;
+  }
+  .intro h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(28px, 7vw, 36px);
+    font-weight: 700; margin-bottom: 8px; line-height: 1.3;
+  }
+  .intro .subtitle {
+    font-family: var(--font-mono);
+    font-size: 12px; color: #bbb; letter-spacing: 0.15em; margin-bottom: 36px;
+  }
+  .intro .desc {
+    font-size: 15px; line-height: 2; color: #999;
+    max-width: 360px; margin: 0 auto 44px;
+  }
+  .btn-start {
+    font-size: 16px; font-weight: 600; color: #fff;
+    background: linear-gradient(135deg, #22a06b, #36b37e);
+    border: none; padding: 15px 52px; border-radius: 28px;
+    cursor: pointer; box-shadow: 0 4px 24px rgba(34,160,107,0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-start:hover, .btn-start:active {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px rgba(34,160,107,0.28);
+  }
+
+  /* ─── Gender Select ─── */
+  .gender-select { animation: fadeIn 0.5s ease-out; text-align: center; padding-top: 12vh; }
+  .gender-select h2 {
+    font-family: var(--font-serif);
+    font-size: clamp(20px, 5vw, 26px);
+    font-weight: 600; margin-bottom: 8px;
+  }
+  .gender-select .hint { font-size: 13px; color: #bbb; margin-bottom: 40px; }
+  .gender-options { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+  .gender-btn {
+    width: 140px; padding: 28px 20px 20px;
+    background: #fff; border: 2px solid #eee; border-radius: 20px;
+    cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .gender-btn:hover, .gender-btn:active { border-color: var(--green); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .gender-btn .icon { font-size: 40px; margin-bottom: 12px; }
+  .gender-btn .label { font-size: 15px; font-weight: 500; color: #555; }
+
+  /* ─── Test ─── */
+  .test-container { animation: fadeIn 0.4s ease-out; }
+  .progress-bar { width:100%; height:3px; background:rgba(0,0,0,0.05); border-radius:2px; overflow:hidden; margin-bottom:12px; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--green),var(--purple)); border-radius:2px; transition:width 0.5s cubic-bezier(.4,0,.2,1); }
+  .dot-nav { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-bottom:24px; padding:0 8px; }
+  .dot {
+    width:10px; height:10px; border-radius:50%; border:1.5px solid #ddd;
+    background:transparent; cursor:pointer; transition:all 0.2s; padding:0; flex-shrink:0;
+  }
+  .dot.answered { background:#ccc; border-color:#ccc; }
+  .dot.current { background:var(--green); border-color:var(--green); transform:scale(1.3); }
+  .q-card {
+    background: #fff; border-radius: 20px;
+    padding: clamp(24px, 6vw, 40px) clamp(20px, 5vw, 36px);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.04);
+    margin-bottom: 20px;
+    transition: opacity 0.25s, transform 0.25s;
+  }
+  .q-card.hiding { opacity:0; transform:translateY(8px); }
+  .q-text {
+    font-family: var(--font-sans);
+    font-size: clamp(18px, 4.5vw, 22px);
+    line-height: 1.75; margin-bottom: 36px;
+    font-weight: 500; letter-spacing: 0.02em;
+  }
+  .circles { display:flex; align-items:center; justify-content:center; gap:clamp(8px,2.5vw,18px); }
+  .circle-label { font-size:12px; font-weight:600; flex-shrink:0; user-select:none; }
+  .circle-label.agree { color:var(--green); }
+  .circle-label.disagree { color:var(--purple); }
+  .circle-btn {
+    border-radius:50%; cursor:pointer;
+    transition:all 0.2s cubic-bezier(.4,0,.2,1);
+    padding:0; outline:none; flex-shrink:0;
+    border-width:2.5px; border-style:solid; background:transparent;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .circle-btn.selected { transform:scale(1.2); }
+  .circle-btn:active { transform:scale(0.95); }
+  .circle-btn.selected:active { transform:scale(1.1); }
+  .btn-back {
+    font-size:13px; color:#bbb; background:transparent;
+    border:none; cursor:pointer; padding:10px 20px;
+  }
+  .btn-next {
+    font-size:13px; color:#bbb; background:transparent;
+    border:none; cursor:pointer; padding:10px 20px;
+  }
+  .nav-row {
+    display:flex; justify-content:center; gap:12px; margin-top:20px;
+  }
+  .btn-submit {
+    font-size:14px; font-weight:600; color:#fff;
+    background:linear-gradient(135deg, var(--green), #36b37e);
+    border:none; padding:12px 36px; border-radius:24px;
+    cursor:pointer; margin-top:20px; display:block; margin-left:auto; margin-right:auto;
+    box-shadow:0 2px 12px rgba(34,160,107,0.2);
+    transition:transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-submit:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(34,160,107,0.28); }
+  .btn-submit:disabled { opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none; }
+  .missing-hint {
+    text-align:center; font-size:13px; color:var(--red); margin-top:12px;
+    animation:fadeIn 0.3s ease-out;
+  }
+  .dot.unanswered { border-color:var(--red); animation:dotPulse 0.6s ease 2; }
+  @keyframes dotPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.5)} }
+
+  /* ─── Result ─── */
+  .result { max-width:560px; margin:0 auto; }
+  .share-card {
+    background:#fff; border-radius:24px;
+    padding:32px 24px 28px; box-shadow:0 4px 30px rgba(0,0,0,0.06);
+    margin-bottom:32px; text-align:center; position:relative; overflow:hidden;
+  }
+  .share-card .char-img { width: clamp(160px, 40vw, 220px); height: auto; margin: 0 auto 16px; display: block; }
+  .share-card .type-name { font-family:var(--font-serif); font-size:28px; font-weight:700; margin-bottom:4px; }
+  .share-card .type-en { font-family:var(--font-mono); font-size:12px; color:#bbb; letter-spacing:0.08em; margin-bottom:14px; }
+  .share-card .type-summary { font-size:14px; color:#777; line-height:1.6; margin-bottom:20px; }
+  .share-card .mini-scores { display:flex; justify-content:center; gap:24px; }
+  .share-card .mini-score-item { text-align:center; }
+  .share-card .mini-score-label { font-size:11px; color:#999; margin-bottom:4px; }
+  .share-card .mini-score-val { font-family:var(--font-mono); font-size:22px; font-weight:700; }
+  .share-hint { text-align:center; font-size:11px; color:#ccc; margin:-20px 0 28px; }
+
+  .reveal {
+    opacity:0; transform:translateY(24px);
+    transition:opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  .dim-scores { display:flex; gap:12px; margin-bottom:24px; }
+  .dim-card { flex:1; border-radius:14px; padding:16px 14px; text-align:center; background:#fff; box-shadow:0 1px 8px rgba(0,0,0,0.03); }
+  .dim-label { font-size:12px; margin-bottom:6px; font-weight:500; }
+  .dim-value { font-family:var(--font-mono); font-size:28px; font-weight:700; }
+  .dim-max { font-size:11px; color:#ccc; margin-top:2px; }
+
+  .chart-section { background:#fff; border-radius:18px; padding:24px 16px 16px; margin-bottom:24px; box-shadow:0 1px 8px rgba(0,0,0,0.03); }
+  .chart-title { font-family:var(--font-serif); font-size:15px; font-weight:600; color:#333; text-align:center; margin-bottom:8px; }
+
+  .sub-bars { padding:12px 16px 4px; display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; }
+  .sub-bar-row { display:flex; align-items:center; gap:8px; }
+  .sub-bar-label { font-size:11px; color:#888; width:56px; flex-shrink:0; text-align:right; }
+  .sub-bar-track { flex:1; height:6px; background:#f0f0f0; border-radius:3px; overflow:hidden; }
+  .sub-bar-fill { height:100%; border-radius:3px; transition:width 1s ease 0.3s; }
+  .sub-bar-val { font-family:var(--font-mono); font-size:11px; color:#999; width:26px; flex-shrink:0; }
+
+  .section-title { font-family:var(--font-serif); font-size:17px; font-weight:600; color:#222; margin-bottom:12px; }
+  .type-desc { font-size:14px; line-height:1.9; color:#555; margin-bottom:24px; }
+  .strength-tags { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+  .strength-tag { font-size:13px; padding:7px 16px; border-radius:20px; }
+  .growth-box { margin-bottom:32px; padding:20px 24px; border-radius:16px; border-left:3px solid; background:#fff; box-shadow:0 1px 8px rgba(0,0,0,0.03); }
+  .growth-title { font-family:var(--font-serif); font-size:15px; font-weight:600; color:#333; margin-bottom:8px; }
+  .growth-text { font-size:14px; line-height:1.8; color:#666; }
+  .disclaimer { text-align:center; font-size:11px; color:#bbb; line-height:1.7; margin-bottom:20px; }
+  .btn-restart {
+    font-size:14px; color:#999; background:transparent;
+    border:1px solid #e0e0e0; padding:11px 36px;
+    border-radius:24px; cursor:pointer; transition:all 0.2s;
+  }
+  .btn-restart:hover { border-color:#999; color:#666; }
+  .btn-share {
+    font-size:14px; font-weight:500; color:var(--green);
+    background:#fff; border:1.5px solid var(--green);
+    padding:11px 32px; border-radius:24px; cursor:pointer;
+    transition:all 0.2s; display:block; margin:0 auto 28px;
+  }
+  .btn-share:hover { background:var(--green); color:#fff; }
+
+  @media (max-width:480px) {
+    #app { padding: 16px 16px 48px; }
+    .intro { padding-top: 4vh; }
+    .intro-carousel { width: 150px; height: 210px; }
+    .gender-select { padding-top: 8vh; }
+    .gender-btn { width: 120px; padding: 22px 16px 16px; }
+    .q-card { padding: 24px 20px; border-radius: 16px; }
+    .dot-nav { gap:5px; } .dot { width:8px; height:8px; }
+    .circles { gap:8px; } .circle-label { font-size:11px; }
+    .sub-bars { grid-template-columns:1fr; gap:8px; }
+    .share-card { padding:24px 20px 22px; border-radius:18px; }
+    .share-card .type-name { font-size:24px; }
+    .share-card .mini-score-val { font-size:20px; }
+    .dim-scores { gap:10px; } .dim-card { padding:12px 10px; } .dim-value { font-size:24px; }
+    .chart-section { padding:20px 12px 12px; }
+    .growth-box { padding:16px 18px; }
+    .strength-tag { font-size:12px; padding:6px 12px; }
+  }
+  @media (max-width:360px) {
+    .circles { gap:6px; } .q-text { font-size:17px; }
+    .gender-options { gap: 14px; }
+    .gender-btn { width: 110px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const QUESTIONS = [
+  {id:1,  text:"你会留意伴侣的言行，从中确认对方是否还爱你。", dim:"anxiety", sub:"abandonFear", rev:false},
+  {id:2,  text:"你倾向于把最好的一面展示给伴侣，避免暴露自己不太好的部分。", dim:"anxiety", sub:"abandonFear", rev:false},
+  {id:3,  text:"即使伴侣偶尔表现得冷淡，你也不会往「要分手」的方向想。", dim:"anxiety", sub:"abandonFear", rev:true},
+  {id:4,  text:"和伴侣发生小摩擦后，你能很快放下，不会反复纠结。", dim:"anxiety", sub:"abandonFear", rev:true},
+  {id:5,  text:"你有时会拿自己和伴侣身边的人比较，觉得别人可能更适合对方。", dim:"anxiety", sub:"abandonFear", rev:false},
+  {id:6,  text:"偶尔想到「万一分手了」这种念头，你会低落很久。", dim:"anxiety", sub:"abandonFear", rev:false},
+  {id:7,  text:"你会主动问伴侣「你觉得我们现在怎么样」这类问题。", dim:"anxiety", sub:"seekReassurance", rev:false},
+  {id:8,  text:"你偶尔会故意不主动联系，看对方多久会来找你。", dim:"anxiety", sub:"seekReassurance", rev:false},
+  {id:9,  text:"大多数时候，你不需要伴侣做什么特别的事就能感到被爱。", dim:"anxiety", sub:"seekReassurance", rev:true},
+  {id:10, text:"如果一整天没收到伴侣的消息，你通常会先发一条过去。", dim:"anxiety", sub:"seekReassurance", rev:false},
+  {id:11, text:"伴侣说「没什么」的时候，你习惯追问到底怎么了。", dim:"anxiety", sub:"seekReassurance", rev:false},
+  {id:12, text:"伴侣的一句无心之言，你可能到了晚上还在想是什么意思。", dim:"anxiety", sub:"seekReassurance", rev:false},
+  {id:13, text:"伴侣超过一小时没回你的消息时，你会忍不住看手机好几次。", dim:"anxiety", sub:"overSensitive", rev:false},
+  {id:14, text:"你能敏锐地察觉到伴侣态度的微妙变化。", dim:"anxiety", sub:"overSensitive", rev:false},
+  {id:15, text:"你时常觉得自己在关系中投入的精力比对方多。", dim:"anxiety", sub:"overSensitive", rev:false},
+  {id:16, text:"不在伴侣身边的时候，你会频繁想对方现在在做什么、和谁在一起。", dim:"anxiety", sub:"overSensitive", rev:false},
+  {id:17, text:"伴侣发消息时少了一个表情包，你会注意到并想这是不是意味着什么。", dim:"anxiety", sub:"overSensitive", rev:false},
+  {id:18, text:"吵架之后你会不断复盘对话，思考自己是不是说错了什么。", dim:"anxiety", sub:"overSensitive", rev:false},
+  {id:19, text:"关系进展到一定程度后，你会自然地想要给自己留一些空间。", dim:"avoidance", sub:"resistIntimacy", rev:false},
+  {id:20, text:"你更喜欢保持一种「亲密但有边界」的关系状态。", dim:"avoidance", sub:"resistIntimacy", rev:false},
+  {id:21, text:"伴侣突然变得特别黏人时，你的第一反应是需要喘口气。", dim:"avoidance", sub:"resistIntimacy", rev:false},
+  {id:22, text:"你理想中的关系是双方各有各的时间和空间。", dim:"avoidance", sub:"resistIntimacy", rev:false},
+  {id:23, text:"和伴侣在一起时，身体上的亲近（拥抱、依偎）对你来说很自然。", dim:"avoidance", sub:"resistIntimacy", rev:true},
+  {id:24, text:"你喜欢和伴侣待在一起、什么都不做也觉得舒服的状态。", dim:"avoidance", sub:"resistIntimacy", rev:true},
+  {id:25, text:"遇到麻烦事时，你习惯自己扛，而不是第一时间告诉伴侣。", dim:"avoidance", sub:"resistDependence", rev:false},
+  {id:26, text:"即使恋爱了，你也会维持自己独立的社交圈和生活节奏。", dim:"avoidance", sub:"resistDependence", rev:false},
+  {id:27, text:"搬家或生病时，你更倾向于自己搞定而不是让伴侣帮忙。", dim:"avoidance", sub:"resistDependence", rev:false},
+  {id:28, text:"在伴侣面前，你希望自己是那个「能搞定一切」的角色。", dim:"avoidance", sub:"resistDependence", rev:false},
+  {id:29, text:"压力大的时候，你会很自然地向伴侣寻求支持。", dim:"avoidance", sub:"resistDependence", rev:true},
+  {id:30, text:"周末有一整天空闲时，你更想一个人待着而不是约伴侣。", dim:"avoidance", sub:"resistDependence", rev:false},
+  {id:31, text:"你很少在伴侣面前哭，或者会刻意避免这种情况。", dim:"avoidance", sub:"emotionalShutdown", rev:false},
+  {id:32, text:"你会主动跟伴侣聊自己最近的烦恼或者内心的纠结。", dim:"avoidance", sub:"emotionalShutdown", rev:true},
+  {id:33, text:"关于自己真正在想什么，伴侣知道的其实不多。", dim:"avoidance", sub:"emotionalShutdown", rev:false},
+  {id:34, text:"伴侣问「怎么了」的时候，你通常会说「没事」然后自己消化。", dim:"avoidance", sub:"emotionalShutdown", rev:false},
+  {id:35, text:"你觉得把负面情绪带给伴侣是一种打扰。", dim:"avoidance", sub:"emotionalShutdown", rev:false},
+  {id:36, text:"你不介意在伴侣面前展现自己脆弱、笨拙或者不酷的一面。", dim:"avoidance", sub:"emotionalShutdown", rev:true},
+];
+const TOTAL = QUESTIONS.length;
+const SUB_LABELS = { abandonFear:"害怕被抛弃", seekReassurance:"渴望确认", overSensitive:"过度敏感", resistIntimacy:"抗拒亲密", resistDependence:"抗拒依赖", emotionalShutdown:"情感封闭" };
+const SUB_KEYS = Object.keys(SUB_LABELS);
+const SUB_COLORS = { abandonFear:"#E07B4C", seekReassurance:"#E8A04C", overSensitive:"#D4605A", resistIntimacy:"#6B7FD7", resistDependence:"#5A9BD4", emotionalShutdown:"#7B68AE" };
+const DIM_COUNTS = { anxiety:0, avoidance:0 };
+const DIM_INDICES = { anxiety:[], avoidance:[] };
+QUESTIONS.forEach((q,i) => { DIM_COUNTS[q.dim]++; DIM_INDICES[q.dim].push(i); });
+
+const TYPES = {
+  secure:  { name:"安全型", nameEn:"Secure", color:"#2D8F65", gradient:"linear-gradient(135deg,#2D8F65,#36b37e)", summary:"你在关系中感到安心与自在", desc:"你在亲密关系中既能享受亲密，也能保持健康的独立。你信任伴侣，不过度担心被抛弃，也不害怕走近对方。遇到冲突时，你倾向于直接沟通，而不是逃避或攻击。这种依恋模式为你的关系奠定了温暖稳固的基础。", strengths:["情绪稳定，善于沟通","信任伴侣，给予空间","能自然表达需求","冲突时保持理性与温暖"], growth:"即使是安全型，也可以继续提升对伴侣情绪的觉察力，以及在高压情境下保持稳定的能力。" },
+  anxious: { name:"焦虑型", nameEn:"Anxious-Preoccupied", color:"#D4605A", gradient:"linear-gradient(135deg,#D4605A,#E07B6A)", summary:"你渴望深度连接，却常常担心失去", desc:"你非常重视亲密关系，渴望和伴侣建立深层的情感纽带。但你也容易对关系的稳定性感到不安——对方的一点冷淡就可能点燃你的焦虑。你可能会通过反复确认、试探、或加倍付出来缓解这种不安。", strengths:["对情感高度投入与敏感","善于察觉关系中的变化","愿意为关系全力付出","共情能力强，情感丰富"], growth:"学习自我安抚，区分「真实的威胁」和「焦虑的想象」。培养独立于关系之外的自我价值感，会让你在关系中更加从容。" },
+  avoidant:{ name:"回避型", nameEn:"Dismissive-Avoidant", color:"#4A76C4", gradient:"linear-gradient(135deg,#4A76C4,#6B8FD7)", summary:"你重视独立，在亲密中守护自己的空间", desc:"你习惯自给自足，对过度的亲密感到不适。你可能觉得依赖他人是一种风险，更倾向于在情感上保持安全距离。这并不意味着你不渴望连接——只是你对亲密有一道本能的边界线。", strengths:["独立自主，边界清晰","不易被关系波动影响","理性分析能力强","给伴侣充分的空间"], growth:"尝试在安全的关系中逐步打开自己。表达脆弱并不等于失控——适度的依赖反而能让关系更深、更稳。" },
+  fearful: { name:"恐惧回避型", nameEn:"Fearful-Avoidant", color:"#7B5EA7", gradient:"linear-gradient(135deg,#7B5EA7,#9B7EC7)", summary:"你渴望亲密，同时又害怕靠近", desc:"你的内心存在一种深层的矛盾：既渴望被爱和理解，又担心真正走近后会受到伤害。你可能会在「拉近」和「推开」之间反复，让自己和伴侣都感到迷惑。这种模式往往与早期经历中的不安全感有关。", strengths:["对人性复杂性有深刻洞察","自我觉察潜力很高","经历过挣扎，更能共情","一旦信任建立，连接极深"], growth:"寻求专业支持可以帮助你理解这种内在矛盾。学习区分「恐惧驱动的反应」和「真实感受」，逐步建立对关系的信心。" }
+};
+
+// Character image mapping
+const CHAR_IMAGES = {
+  secure:  { f:"images/secure_f.png",  m:"images/secure_m.png" },
+  anxious: { f:"images/anxious_f.png", m:"images/anxious_m.png" },
+  avoidant:{ f:"images/avoidant_f.png",m:"images/avoidant_m.png" },
+  fearful: { f:"images/fearful_f.png", m:"images/fearful_m.png" }
+};
+
+let phase = "intro"; // intro | gender | test | result
+let currentQ = 0;
+let answers = {};
+let gender = "f"; // f or m
+let debugTaps = 0;
+let debugScores = null; // override for debug mode
+
+function calcScores() {
+  const subs = {};
+  const dims = { anxiety:{sum:0,n:0}, avoidance:{sum:0,n:0} };
+  QUESTIONS.forEach(q => {
+    const raw = answers[q.id]; if (raw === undefined) return;
+    let score = 7 - raw; if (q.rev) score = 8 - score;
+    dims[q.dim].sum += score; dims[q.dim].n++;
+    if (!subs[q.sub]) subs[q.sub] = {sum:0,n:0};
+    subs[q.sub].sum += score; subs[q.sub].n++;
+  });
+  const subScores = {};
+  Object.keys(subs).forEach(k => { subScores[k] = subs[k].n ? subs[k].sum/subs[k].n : 4; });
+  return { anxiety: dims.anxiety.n ? dims.anxiety.sum/dims.anxiety.n : 4, avoidance: dims.avoidance.n ? dims.avoidance.sum/dims.avoidance.n : 4, subScores };
+}
+function getTypeKey(a,v) { if(a<=4&&v<=4) return "secure"; if(a>4&&v<=4) return "anxious"; if(a<=4&&v>4) return "avoidant"; return "fearful"; }
+function toPct(score) { return Math.round(((score - 1) / 6) * 100); }
+function pctLabel(pct) { if(pct<25) return "偏低"; if(pct<50) return "中等偏低"; if(pct<75) return "中等偏高"; return "偏高"; }
+
+const $ = id => document.getElementById(id);
+const app = document.getElementById("app");
+
+function render() {
+  if (phase==="intro") renderIntro();
+  else if (phase==="gender") renderGender();
+  else if (phase==="test") renderTest();
+  else renderResult();
+}
+
+function renderIntro() {
+  const allImages = [
+    "images/secure_f.png", "images/anxious_m.png",
+    "images/avoidant_f.png", "images/fearful_m.png",
+    "images/secure_m.png", "images/anxious_f.png",
+    "images/avoidant_m.png", "images/fearful_f.png",
+  ];
+  const imgsHTML = allImages.map((src, i) =>
+    `<img src="${src}" alt="" ${i===0?'class="active"':''}>`
+  ).join('');
+
+  app.innerHTML = `
+    <div class="intro">
+      <div class="intro-carousel" id="carousel">${imgsHTML}</div>
+      <div class="intro-carousel-hint">你是哪一种？</div>
+      <h1 id="introTitle">依恋类型测试</h1>
+      <div class="subtitle">ATTACHMENT STYLE ASSESSMENT</div>
+      <div class="desc">共 ${TOTAL} 道题，大约需要 6 分钟<br>请根据你在亲密关系中的真实感受作答<br>没有对错之分</div>
+      <button class="btn-start" id="btnStart">开始测试</button>
+    </div>`;
+
+  // Start cycling
+  let idx = 0;
+  const imgs = document.querySelectorAll("#carousel img");
+  const cycleInterval = setInterval(() => {
+    const oldIdx = idx;
+    idx = (idx + 1) % imgs.length;
+    imgs[oldIdx].classList.remove("active");
+    imgs[oldIdx].classList.add("exit");
+    imgs[idx].classList.add("active");
+    setTimeout(() => {
+      imgs[oldIdx].classList.remove("exit");
+    }, 600);
+  }, 1000);
+
+  $("btnStart").onclick = () => { clearInterval(cycleInterval); phase="gender"; render(); };
+  $("introTitle").onclick = () => {
+    debugTaps++;
+    if (debugTaps >= 5) {
+      debugTaps = 0;
+      const panel = document.createElement("div");
+      panel.style.cssText = "margin-top:32px;display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:300px;margin-left:auto;margin-right:auto;";
+      const configs = [
+        {tk:"secure",g:"f",label:"安全♀"},{tk:"secure",g:"m",label:"安全♂"},
+        {tk:"anxious",g:"f",label:"焦虑♀"},{tk:"anxious",g:"m",label:"焦虑♂"},
+        {tk:"avoidant",g:"f",label:"回避♀"},{tk:"avoidant",g:"m",label:"回避♂"},
+        {tk:"fearful",g:"f",label:"恐惧♀"},{tk:"fearful",g:"m",label:"恐惧♂"},
+      ];
+      const fakeScores = {
+        secure:{anxiety:2.5,avoidance:2.3}, anxious:{anxiety:5.8,avoidance:2.4},
+        avoidant:{anxiety:2.2,avoidance:5.6}, fearful:{anxiety:5.5,avoidance:5.4}
+      };
+      configs.forEach(c => {
+        const btn = document.createElement("button");
+        btn.textContent = c.label;
+        btn.style.cssText = `font-size:13px;padding:10px;border:1px solid ${TYPES[c.tk].color};color:${TYPES[c.tk].color};background:#fff;border-radius:12px;cursor:pointer;font-family:inherit;`;
+        btn.onclick = () => {
+          gender = c.g;
+          const fs = fakeScores[c.tk];
+          debugScores = { anxiety:fs.anxiety, avoidance:fs.avoidance, subScores:{abandonFear:fs.anxiety*0.9,seekReassurance:fs.anxiety*1.05,overSensitive:fs.anxiety*0.95,resistIntimacy:fs.avoidance*1.05,resistDependence:fs.avoidance*0.9,emotionalShutdown:fs.avoidance*0.95} };
+          phase = "result"; render(); window.scrollTo(0,0);
+        };
+        panel.appendChild(btn);
+      });
+      app.querySelector(".intro").appendChild(panel);
+    }
+  };
+}
+
+function renderGender() {
+  app.innerHTML = `
+    <div class="gender-select">
+      <h2>选择你的形象</h2>
+      <div class="hint">仅用于形象展示，不影响测试结果</div>
+      <div class="gender-options">
+        <button class="gender-btn" id="gF">
+          <div class="icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="15" r="9" stroke="#E07B8A" stroke-width="2.5"/><line x1="20" y1="24" x2="20" y2="36" stroke="#E07B8A" stroke-width="2.5" stroke-linecap="round"/><line x1="14" y1="30" x2="26" y2="30" stroke="#E07B8A" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+          <div class="label">女生</div>
+        </button>
+        <button class="gender-btn" id="gM">
+          <div class="icon"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="16" cy="22" r="9" stroke="#5A9BD4" stroke-width="2.5"/><line x1="22.5" y1="15.5" x2="32" y2="6" stroke="#5A9BD4" stroke-width="2.5" stroke-linecap="round"/><line x1="25" y1="6" x2="32" y2="6" stroke="#5A9BD4" stroke-width="2.5" stroke-linecap="round"/><line x1="32" y1="6" x2="32" y2="13" stroke="#5A9BD4" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+          <div class="label">男生</div>
+        </button>
+      </div>
+    </div>`;
+  $("gF").onclick = () => { gender="f"; phase="test"; render(); };
+  $("gM").onclick = () => { gender="m"; phase="test"; render(); };
+}
+
+function renderTest() {
+  const q = QUESTIONS[currentQ];
+  const answered = Object.keys(answers).length;
+  const pct = (answered/TOTAL)*100;
+  const sizes = [42,34,26,18,26,34,42];
+  const leftC = ["#1a8a5c","#22a06b","#36b37e"];
+  const rightC = ["#8B7FC7","#7668BA","#6554A0"];
+
+  let dotsHTML = '';
+  for (let i = 0; i < TOTAL; i++) {
+    const isAnswered = answers[QUESTIONS[i].id] !== undefined;
+    const isCurrent = i === currentQ;
+    let cls = 'dot';
+    if (isAnswered) cls += ' answered';
+    if (isCurrent) cls += ' current';
+    dotsHTML += `<button class="${cls}" data-qi="${i}"></button>`;
+  }
+
+  let circlesHTML = '<span class="circle-label agree">同意</span>';
+  for (let i = 0; i < 7; i++) {
+    const s = sizes[i];
+    let bc;
+    if (i<3) bc=leftC[i]; else if (i===3) bc=answers[q.id]===i?"#999":"#ccc"; else bc=rightC[i-4];
+    const sel = answers[q.id]===i;
+    const bg = sel ? bc : "transparent";
+    circlesHTML += `<button class="circle-btn${sel?' selected':''}" data-idx="${i}" style="width:${s}px;height:${s}px;border-color:${bc};background:${bg}"></button>`;
+  }
+  circlesHTML += '<span class="circle-label disagree">不认同</span>';
+
+  app.innerHTML = `
+    <div class="test-container">
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="dot-nav">${dotsHTML}</div>
+      <div class="q-card" id="qCard">
+        <div class="q-text">${q.text}</div>
+        <div class="circles">${circlesHTML}</div>
+      </div>
+      <div class="nav-row">
+        ${currentQ>0 ? '<button class="btn-back" id="btnBack">← 上一题</button>' : ''}
+        ${currentQ<TOTAL-1 ? '<button class="btn-next" id="btnNext">下一题 →</button>' : ''}
+      </div>
+      ${answered===TOTAL ? '<button class="btn-submit" id="btnSubmit">查看结果</button>' : ''}
+      <div id="missingHint"></div>
+    </div>`;
+
+  app.querySelectorAll(".dot").forEach(d => {
+    d.onclick = () => {
+      const target = parseInt(d.dataset.qi);
+      const card = $("qCard"); if(card) card.classList.add("hiding");
+      setTimeout(() => { currentQ = target; renderTest(); }, 200);
+    };
+  });
+
+  app.querySelectorAll(".circle-btn").forEach(btn => {
+    btn.onclick = () => {
+      const idx = parseInt(btn.dataset.idx);
+      answers[q.id] = idx;
+      app.querySelectorAll(".circle-btn").forEach((b,i) => {
+        let bci; if(i<3) bci=leftC[i]; else if(i===3) bci=idx===i?"#999":"#ccc"; else bci=rightC[i-4];
+        const isSel = idx===i;
+        b.style.background = isSel ? bci : "transparent";
+        b.style.transform = isSel ? "scale(1.2)" : "scale(1)";
+        b.className = "circle-btn"+(isSel?" selected":"");
+      });
+      setTimeout(() => {
+        const card = $("qCard"); if(card) card.classList.add("hiding");
+        setTimeout(() => {
+          if (currentQ<TOTAL-1) { currentQ++; renderTest(); }
+          else { checkAndSubmit(); }
+        }, 250);
+      }, 300);
+    };
+  });
+
+  const back = $("btnBack");
+  if(back) back.onclick = () => {
+    const card=$("qCard"); if(card) card.classList.add("hiding");
+    setTimeout(() => { currentQ--; renderTest(); }, 200);
+  };
+
+  const next = $("btnNext");
+  if(next) next.onclick = () => {
+    const card=$("qCard"); if(card) card.classList.add("hiding");
+    setTimeout(() => { currentQ++; renderTest(); }, 200);
+  };
+
+  const submit = $("btnSubmit");
+  if(submit) submit.onclick = () => { checkAndSubmit(); };
+}
+
+function checkAndSubmit() {
+  const unanswered = [];
+  QUESTIONS.forEach((q,i) => { if(answers[q.id] === undefined) unanswered.push(i); });
+  if (unanswered.length === 0) {
+    phase = "result"; render(); window.scrollTo(0,0);
+  } else {
+    // Highlight unanswered dots
+    app.querySelectorAll(".dot").forEach((d,i) => {
+      if (unanswered.includes(i)) d.classList.add("unanswered");
+    });
+    const hint = $("missingHint");
+    if(hint) hint.innerHTML = `<div class="missing-hint">还有 ${unanswered.length} 道题未作答，点击红色圆点可跳转补答</div>`;
+    // Navigate to first unanswered
+    setTimeout(() => {
+      const card = $("qCard"); if(card) card.classList.add("hiding");
+      setTimeout(() => { currentQ = unanswered[0]; renderTest(); }, 200);
+    }, 1500);
+  }
+}
+
+function renderResult() {
+  const sc = debugScores || calcScores();
+  debugScores = null;
+  const tk = getTypeKey(sc.anxiety, sc.avoidance);
+  const td = TYPES[tk];
+  const charImg = CHAR_IMAGES[tk][gender];
+
+  // Radar
+  const cx=150,cy=140,R=100;
+  function ptAt(i,r) { const a=(Math.PI*2*i)/6-Math.PI/2; return [cx+r*Math.cos(a),cy+r*Math.sin(a)]; }
+  let radarSVG = '<svg viewBox="0 0 300 290" style="width:100%;max-width:340px;margin:0 auto;display:block">';
+  [0.25,0.5,0.75,1.0].forEach(lv => { radarSVG += `<polygon points="${SUB_KEYS.map((_,i)=>ptAt(i,lv*R).join(",")).join(" ")}" fill="none" stroke="#e8e8e8" stroke-width="0.8"/>`; });
+  SUB_KEYS.forEach((_,i) => { const[x,y]=ptAt(i,R); radarSVG+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#e8e8e8" stroke-width="0.6"/>`; });
+  const dataPts = SUB_KEYS.map((k,i)=>{const v=((sc.subScores[k]||1)-1)/6;return ptAt(i,v*R);});
+  radarSVG += `<polygon points="${dataPts.map(p=>p.join(",")).join(" ")}" fill="${td.color}" opacity="0.12" stroke="${td.color}" stroke-width="2"/>`;
+  dataPts.forEach(p=>{radarSVG+=`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="${td.color}" stroke="#fff" stroke-width="2"/>`;});
+  SUB_KEYS.forEach((k,i)=>{const[x,y]=ptAt(i,R+26);radarSVG+=`<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="500" fill="#777" font-family="'Noto Sans SC',sans-serif">${SUB_LABELS[k]}</text>`;});
+  radarSVG += '</svg>';
+
+  let subBarsHTML = '';
+  SUB_KEYS.forEach(k=>{const val=sc.subScores[k]||1;const pct=((val-1)/6)*100;subBarsHTML+=`<div class="sub-bar-row"><div class="sub-bar-label">${SUB_LABELS[k]}</div><div class="sub-bar-track"><div class="sub-bar-fill" style="width:${pct}%;background:${SUB_COLORS[k]}"></div></div><div class="sub-bar-val">${Math.round(pct)}%</div></div>`;});
+
+  // Quadrant
+  const xPct=((sc.avoidance-1)/6)*100, yPct=((sc.anxiety-1)/6)*100;
+  const dotX=60+(xPct/100)*280, dotY=300-(yPct/100)*260;
+  let quadSVG = '<svg viewBox="0 0 400 340" style="width:100%;max-width:400px;margin:0 auto;display:block">';
+  quadSVG += `<rect x="60" y="40" width="140" height="130" rx="6" fill="${TYPES.anxious.color}" opacity="0.05"/>`;
+  quadSVG += `<rect x="200" y="40" width="140" height="130" rx="6" fill="${TYPES.fearful.color}" opacity="0.05"/>`;
+  quadSVG += `<rect x="60" y="170" width="140" height="130" rx="6" fill="${TYPES.secure.color}" opacity="0.05"/>`;
+  quadSVG += `<rect x="200" y="170" width="140" height="130" rx="6" fill="${TYPES.avoidant.color}" opacity="0.05"/>`;
+  quadSVG += '<line x1="60" y1="170" x2="340" y2="170" stroke="#e0e0e0" stroke-width="0.8"/><line x1="200" y1="40" x2="200" y2="300" stroke="#e0e0e0" stroke-width="0.8"/>';
+  [{k:"anxious",x:130,y:112},{k:"fearful",x:270,y:112},{k:"secure",x:130,y:238},{k:"avoidant",x:270,y:238}].forEach(({k,x,y})=>{
+    quadSVG+=`<text x="${x}" y="${y}" text-anchor="middle" font-size="13" font-weight="600" fill="${TYPES[k].color}" opacity="0.55" font-family="'Noto Sans SC',sans-serif">${TYPES[k].name}</text>`;
+    quadSVG+=`<text x="${x}" y="${y+15}" text-anchor="middle" font-size="9" fill="${TYPES[k].color}" opacity="0.3" font-family="sans-serif">${TYPES[k].nameEn}</text>`;
+  });
+  quadSVG+=`<text x="200" y="28" text-anchor="middle" font-size="11" fill="#bbb">高焦虑 ↑</text>`;
+  quadSVG+=`<text x="200" y="320" text-anchor="middle" font-size="11" fill="#bbb">↓ 低焦虑</text>`;
+  quadSVG+=`<text x="48" y="174" text-anchor="end" font-size="10" fill="#bbb" transform="rotate(-90,38,170)">低回避</text>`;
+  quadSVG+=`<text x="358" y="174" text-anchor="start" font-size="10" fill="#bbb" transform="rotate(-90,362,170)">高回避</text>`;
+  quadSVG+=`<circle cx="${dotX}" cy="${dotY}" r="18" fill="${td.color}" opacity="0.1"><animate attributeName="r" values="18;24;18" dur="2.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.1;0.03;0.1" dur="2.5s" repeatCount="indefinite"/></circle>`;
+  quadSVG+=`<circle cx="${dotX}" cy="${dotY}" r="7" fill="${td.color}" stroke="white" stroke-width="2.5"/>`;
+  quadSVG+=`<text x="${dotX}" y="${dotY-16}" text-anchor="middle" font-size="10" font-weight="600" fill="${td.color}">你的位置</text>`;
+  quadSVG+='</svg>';
+
+  const tagsHTML = td.strengths.map(s=>`<span class="strength-tag" style="background:${td.color}0C;color:${td.color};border:1px solid ${td.color}18">${s}</span>`).join('');
+
+  app.innerHTML = `
+    <div class="result">
+      <div class="share-card reveal" style="animation:fadeIn 0.5s ease-out both">
+        <div style="position:absolute;top:0;left:0;right:0;height:4px;background:${td.gradient};border-radius:24px 24px 0 0"></div>
+        <img class="char-img" src="${charImg}" alt="${td.name}">
+        <div class="type-name" style="color:${td.color}">${td.name}</div>
+        <div class="type-en">${td.nameEn}</div>
+        <div class="type-summary">${td.summary}</div>
+        <div class="mini-scores">
+          <div class="mini-score-item">
+            <div class="mini-score-label" style="color:var(--red)">焦虑</div>
+            <div class="mini-score-val" style="color:var(--red)">${toPct(sc.anxiety)}%</div>
+            <div style="font-size:11px;color:#999;margin-top:2px">${pctLabel(toPct(sc.anxiety))}</div>
+          </div>
+          <div style="width:1px;height:40px;background:#eee;align-self:center"></div>
+          <div class="mini-score-item">
+            <div class="mini-score-label" style="color:var(--blue)">回避</div>
+            <div class="mini-score-val" style="color:var(--blue)">${toPct(sc.avoidance)}%</div>
+            <div style="font-size:11px;color:#999;margin-top:2px">${pctLabel(toPct(sc.avoidance))}</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-share" id="btnShare">保存分享图</button>
+
+      <div class="reveal" id="rv1">
+        <div class="chart-section">
+          <div class="chart-title">子维度画像</div>
+          ${radarSVG}
+          <div class="sub-bars">${subBarsHTML}</div>
+        </div>
+      </div>
+      <div class="reveal" id="rv2">
+        <div class="chart-section">
+          <div class="chart-title">四象限定位</div>
+          ${quadSVG}
+        </div>
+      </div>
+      <div class="reveal" id="rv3" style="padding:0 4px">
+        <div class="section-title">关于你的类型</div>
+        <div class="type-desc">${td.desc}</div>
+      </div>
+      <div class="reveal" id="rv4" style="padding:0 4px">
+        <div class="section-title">你的优势</div>
+        <div class="strength-tags">${tagsHTML}</div>
+      </div>
+      <div class="reveal" id="rv5">
+        <div class="growth-box" style="border-left-color:${td.color}44">
+          <div class="growth-title">💡 成长方向</div>
+          <div class="growth-text">${td.growth}</div>
+        </div>
+      </div>
+      <div class="reveal" id="rv6">
+        <div class="disclaimer">本测试参考 ECR-R 量表的理论框架设计，仅供自我探索参考<br>不构成心理诊断。如需专业帮助，请咨询心理咨询师。</div>
+        <div style="text-align:center;padding-bottom:16px">
+          <button class="btn-restart" id="btnRestart">重新测试</button>
+        </div>
+      </div>
+    </div>`;
+
+  $("btnRestart").onclick = () => { phase="intro"; currentQ=0; answers={}; render(); window.scrollTo(0,0); };
+
+  $("btnShare").onclick = async () => {
+    const btn = $("btnShare");
+    btn.textContent = "生成中...";
+    btn.disabled = true;
+    try {
+      const W = 750, H = 1050;
+      const canvas = document.createElement("canvas");
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext("2d");
+
+      // Background
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, W, H);
+
+      // Title
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#333";
+      ctx.font = "bold 28px sans-serif";
+      ctx.fillText("依恋类型测试", W/2, 50);
+      ctx.fillStyle = "#bbb";
+      ctx.font = "13px sans-serif";
+      ctx.fillText("ATTACHMENT STYLE ASSESSMENT", W/2, 75);
+
+      // Load character image
+      const charImgEl = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = charImg;
+      });
+      if (charImgEl) {
+        const imgH = 260;
+        const imgW = imgH * (charImgEl.width / charImgEl.height);
+        ctx.drawImage(charImgEl, (W - imgW) / 2, 95, imgW, imgH);
+      }
+
+      // Type name
+      const typeY = 385;
+      ctx.fillStyle = td.color;
+      ctx.font = "bold 36px sans-serif";
+      ctx.fillText(td.name, W/2, typeY);
+      ctx.fillStyle = "#bbb";
+      ctx.font = "14px sans-serif";
+      ctx.fillText(td.nameEn, W/2, typeY + 28);
+      ctx.fillStyle = "#777";
+      ctx.font = "16px sans-serif";
+      ctx.fillText(td.summary, W/2, typeY + 60);
+
+      // Scores
+      const scoreY = typeY + 100;
+      const anxPct = toPct(sc.anxiety);
+      const avoPct = toPct(sc.avoidance);
+      // Anxiety
+      ctx.fillStyle = "#D4605A";
+      ctx.font = "13px sans-serif";
+      ctx.fillText("焦虑", W/2 - 60, scoreY);
+      ctx.font = "bold 28px sans-serif";
+      ctx.fillText(anxPct + "%", W/2 - 60, scoreY + 32);
+      ctx.fillStyle = "#999";
+      ctx.font = "12px sans-serif";
+      ctx.fillText(pctLabel(toPct(sc.anxiety)), W/2 - 60, scoreY + 50);
+      // Divider line
+      ctx.strokeStyle = "#eee";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(W/2, scoreY - 8);
+      ctx.lineTo(W/2, scoreY + 52);
+      ctx.stroke();
+      // Avoidance
+      ctx.fillStyle = "#4A76C4";
+      ctx.font = "13px sans-serif";
+      ctx.fillText("回避", W/2 + 60, scoreY);
+      ctx.font = "bold 28px sans-serif";
+      ctx.fillText(avoPct + "%", W/2 + 60, scoreY + 32);
+      ctx.fillStyle = "#999";
+      ctx.font = "12px sans-serif";
+      ctx.fillText(pctLabel(toPct(sc.avoidance)), W/2 + 60, scoreY + 50);
+
+      // Divider
+      const divY = scoreY + 80;
+      ctx.strokeStyle = "#eee";
+      ctx.beginPath();
+      ctx.moveTo(W/2 - 30, divY);
+      ctx.lineTo(W/2 + 30, divY);
+      ctx.stroke();
+
+      // Quadrant title
+      ctx.fillStyle = "#555";
+      ctx.font = "bold 16px sans-serif";
+      ctx.fillText("四象限定位", W/2, divY + 30);
+
+      // Quadrant chart
+      const qx = 120, qy = divY + 50, qw = 510, qh = 360;
+      const mx = qx + qw/2, my = qy + qh/2;
+      // Quadrant backgrounds
+      ctx.globalAlpha = 0.05;
+      ctx.fillStyle = "#D4605A"; ctx.fillRect(qx, qy, qw/2, qh/2);
+      ctx.fillStyle = "#7B5EA7"; ctx.fillRect(mx, qy, qw/2, qh/2);
+      ctx.fillStyle = "#2D8F65"; ctx.fillRect(qx, my, qw/2, qh/2);
+      ctx.fillStyle = "#4A76C4"; ctx.fillRect(mx, my, qw/2, qh/2);
+      ctx.globalAlpha = 1;
+      // Axes
+      ctx.strokeStyle = "#e0e0e0";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(qx, my); ctx.lineTo(qx+qw, my); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(mx, qy); ctx.lineTo(mx, qy+qh); ctx.stroke();
+      // Labels
+      ctx.font = "bold 15px sans-serif";
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = "#D4605A"; ctx.fillText("焦虑型", qx+qw/4, my-30);
+      ctx.fillStyle = "#7B5EA7"; ctx.fillText("恐惧回避型", mx+qw/4, my-30);
+      ctx.fillStyle = "#2D8F65"; ctx.fillText("安全型", qx+qw/4, my+40);
+      ctx.fillStyle = "#4A76C4"; ctx.fillText("回避型", mx+qw/4, my+40);
+      ctx.globalAlpha = 1;
+      // Axis labels
+      ctx.fillStyle = "#bbb";
+      ctx.font = "12px sans-serif";
+      ctx.fillText("高焦虑 ↑", mx, qy - 8);
+      ctx.fillText("↓ 低焦虑", mx, qy + qh + 20);
+      // User dot
+      const dotXPct = (sc.avoidance - 1) / 6;
+      const dotYPct = (sc.anxiety - 1) / 6;
+      const userDotX = qx + dotXPct * qw;
+      const userDotY = qy + qh - dotYPct * qh;
+      ctx.fillStyle = td.color;
+      ctx.globalAlpha = 0.12;
+      ctx.beginPath(); ctx.arc(userDotX, userDotY, 20, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(userDotX, userDotY, 8, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath(); ctx.arc(userDotX, userDotY, 5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = td.color;
+      ctx.beginPath(); ctx.arc(userDotX, userDotY, 5, 0, Math.PI*2); ctx.fill();
+      ctx.font = "bold 11px sans-serif";
+      ctx.fillText("你的位置", userDotX, userDotY - 18);
+
+      // Footer
+      ctx.fillStyle = "#ccc";
+      ctx.font = "12px sans-serif";
+      ctx.fillText("依恋类型测试 · Attachment Style Assessment", W/2, H - 20);
+
+      const imgURL = canvas.toDataURL("image/png");
+      app.innerHTML = '<div style="text-align:center;padding:20px 0 40px;">' +
+        '<button id="btnBackResult" style="font-size:14px;color:#999;background:none;border:1px solid #ddd;padding:10px 28px;border-radius:20px;cursor:pointer;margin-bottom:20px;">← 返回结果</button>' +
+        '<div style="font-size:13px;color:#999;margin-bottom:16px;">长按图片保存到相册</div>' +
+        '<img src="' + imgURL + '" alt="分享图" style="width:92%;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.08);">' +
+        '</div>';
+      window.scrollTo(0, 0);
+      $("btnBackResult").onclick = () => { render(); };
+    } catch(e) {
+      console.error(e);
+      alert("生成失败：" + e.message);
+      btn.textContent = "保存分享图";
+      btn.disabled = false;
+    }
+  };
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add("visible"); observer.unobserve(e.target); } });
+  }, { threshold:0.15, rootMargin:"0px 0px -40px 0px" });
+  document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+}
+
+render();
+</script>
+</body>
+</html>
