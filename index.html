@@ -254,6 +254,27 @@
     transition:all 0.2s; display:block; margin:0 auto 28px;
   }
   .btn-share:hover { background:var(--green); color:#fff; }
+  .export-box {
+    background:linear-gradient(135deg, #f6f9f7, #f3f6fa);
+    border-radius:18px; padding:24px 22px; margin-bottom:24px;
+    text-align:center;
+  }
+  .export-title { font-family:var(--font-serif); font-size:17px; font-weight:600; color:#333; margin-bottom:8px; }
+  .export-desc { font-size:13px; line-height:1.7; color:#888; margin-bottom:18px; }
+  .export-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  .btn-export {
+    font-size:14px; font-weight:500; color:#fff;
+    background:linear-gradient(135deg, var(--purple), #7668BA);
+    border:none; padding:11px 24px; border-radius:22px; cursor:pointer;
+    transition:transform 0.2s, box-shadow 0.2s;
+    box-shadow:0 2px 12px rgba(101,84,160,0.18);
+  }
+  .btn-export:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(101,84,160,0.25); }
+  .btn-export.outline {
+    background:#fff; color:var(--purple); border:1.5px solid var(--purple);
+    box-shadow:none;
+  }
+  .btn-export.outline:hover { background:rgba(101,84,160,0.05); }
 
   @media (max-width:480px) {
     #app { padding: 16px 16px 48px; }
@@ -324,6 +345,8 @@ const QUESTIONS = [
 const TOTAL = QUESTIONS.length;
 const SUB_LABELS = { abandonFear:"害怕被抛弃", seekReassurance:"渴望确认", overSensitive:"过度敏感", resistIntimacy:"抗拒亲密", resistDependence:"抗拒依赖", emotionalShutdown:"情感封闭" };
 const SUB_KEYS = Object.keys(SUB_LABELS);
+const DIM_LABELS = { anxiety:"焦虑维度", avoidance:"回避维度" };
+const OPTION_LABELS = ["非常同意","比较同意","略微同意","中立","略微不认同","比较不认同","非常不认同"];
 const SUB_COLORS = { abandonFear:"#E07B4C", seekReassurance:"#E8A04C", overSensitive:"#D4605A", resistIntimacy:"#6B7FD7", resistDependence:"#5A9BD4", emotionalShutdown:"#7B68AE" };
 const DIM_COUNTS = { anxiety:0, avoidance:0 };
 const DIM_INDICES = { anxiety:[], avoidance:[] };
@@ -368,6 +391,51 @@ function calcScores() {
 function getTypeKey(a,v) { if(a<=4&&v<=4) return "secure"; if(a>4&&v<=4) return "anxious"; if(a<=4&&v>4) return "avoidant"; return "fearful"; }
 function toPct(score) { return Math.round(((score - 1) / 6) * 100); }
 function pctLabel(pct) { if(pct<25) return "偏低"; if(pct<50) return "中等偏低"; if(pct<75) return "中等偏高"; return "偏高"; }
+
+function buildMarkdown(sc, tk) {
+  const td = TYPES[tk];
+  let md = "";
+
+  // Prompt for AI
+  md += "# 我的依恋类型测试作答记录\n\n";
+  md += "> 你是一位熟悉依恋理论的心理学专家。以下是我刚完成的一份依恋类型测试的完整作答记录，包含我的测试结果和每一道题的具体选择。请基于我**每一道题的回答**，分析我在亲密关系中的具体模式，指出值得注意的倾向，并给出可操作的建议。请结合具体题目来谈，不要只讲泛泛的类型描述。\n\n";
+  md += "---\n\n";
+
+  // Result summary
+  md += "## 测试结果\n\n";
+  md += `- **依恋类型**：${td.name}（${td.nameEn}）\n`;
+  md += `- **焦虑维度**：${toPct(sc.anxiety)}%（${pctLabel(toPct(sc.anxiety))}）\n`;
+  md += `- **回避维度**：${toPct(sc.avoidance)}%（${pctLabel(toPct(sc.avoidance))}）\n\n`;
+  md += "**六子维度：**\n\n";
+  SUB_KEYS.forEach(k => {
+    const pct = Math.round((((sc.subScores[k]||1)-1)/6)*100);
+    md += `- ${SUB_LABELS[k]}：${pct}%（${pctLabel(pct)}）\n`;
+  });
+  md += "\n---\n\n";
+
+  // Scale explanation
+  md += "## 作答记录\n\n";
+  md += "每题有 7 个选项：非常同意 / 比较同意 / 略微同意 / 中立 / 略微不认同 / 比较不认同 / 非常不认同。\n\n";
+  md += "标注「反向题」的题目，「同意」代表的是该维度的**低分**方向。\n\n";
+
+  // Questions grouped by sub-dimension
+  SUB_KEYS.forEach(sub => {
+    const dimKey = QUESTIONS.find(q => q.sub === sub).dim;
+    md += `### ${DIM_LABELS[dimKey]} · ${SUB_LABELS[sub]}\n\n`;
+    QUESTIONS.filter(q => q.sub === sub).forEach(q => {
+      const raw = answers[q.id];
+      const choice = raw === undefined ? "（未作答）" : OPTION_LABELS[raw];
+      const revTag = q.rev ? "（反向题）" : "";
+      md += `- ${q.text}${revTag}\n  → **${choice}**\n`;
+    });
+    md += "\n";
+  });
+
+  md += "---\n\n";
+  md += "*本测试基于 ECR-R 量表理论框架设计，仅供自我探索参考，不构成心理诊断。*\n";
+
+  return md;
+}
 
 const $ = id => document.getElementById(id);
 const app = document.getElementById("app");
@@ -676,6 +744,14 @@ function renderResult() {
         </div>
       </div>
       <div class="reveal" id="rv6">
+        <div class="export-box">
+          <div class="export-title">🤖 用 AI 深度分析你的回答</div>
+          <div class="export-desc">导出你的完整作答记录（含每道题的选择），粘贴给任意 AI（DeepSeek、豆包、Kimi、ChatGPT 等），获得针对你每个回答的个性化分析。</div>
+          <div class="export-btns">
+            <button class="btn-export" id="btnCopyMd">复制到剪贴板</button>
+            <button class="btn-export outline" id="btnDownloadMd">下载 Markdown</button>
+          </div>
+        </div>
         <div class="disclaimer">本测试参考 ECR-R 量表的理论框架设计，仅供自我探索参考<br>不构成心理诊断。如需专业帮助，请咨询心理咨询师。</div>
         <div style="text-align:center;padding-bottom:16px">
           <button class="btn-restart" id="btnRestart">重新测试</button>
@@ -684,6 +760,43 @@ function renderResult() {
     </div>`;
 
   $("btnRestart").onclick = () => { phase="intro"; currentQ=0; answers={}; render(); window.scrollTo(0,0); };
+
+  $("btnCopyMd").onclick = async () => {
+    const md = buildMarkdown(sc, tk);
+    const btn = $("btnCopyMd");
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(md);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = md;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      btn.textContent = "✓ 已复制";
+      setTimeout(() => { btn.textContent = "复制到剪贴板"; }, 2000);
+    } catch(e) {
+      btn.textContent = "复制失败，请用下载";
+      setTimeout(() => { btn.textContent = "复制到剪贴板"; }, 2000);
+    }
+  };
+
+  $("btnDownloadMd").onclick = () => {
+    const md = buildMarkdown(sc, tk);
+    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "依恋类型测试_" + TYPES[tk].name + ".md";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   $("btnShare").onclick = async () => {
     const btn = $("btnShare");
